@@ -170,10 +170,19 @@ def calculate_organization_similarity(
 
         for org2 in organizations2:
 
+            # Basic string similarity
             score = string_similarity(
                 org1,
                 org2
             )
+
+            # Substring boost for cases like "Stanford" matching "Stanford University"
+            norm1 = normalize_text(org1)
+            norm2 = normalize_text(org2)
+            if norm1 and norm2:
+                if norm1 in norm2 or norm2 in norm1:
+                    # Give a minimum of 0.85 for substring matches
+                    score = max(score, 0.85)
 
             best_score = max(
                 best_score,
@@ -376,8 +385,21 @@ def calculate_match_score(
     )
 
 
+    base_score = normalized_score * 100
+
+    # --------------------------------------------------------
+    # Platform-specific prioritization boosts
+    # --------------------------------------------------------
+    platform = evidence2.get("platform", "").lower()
+    if platform == "linkedin":
+        base_score += 15
+    elif platform == "medium":
+        base_score += 10
+    elif platform == "github":
+        base_score += 5
+
     final_score = round(
-        normalized_score * 100,
+        min(100.0, base_score),
         2
     )
 
@@ -387,16 +409,18 @@ def calculate_match_score(
     # --------------------------------------------------------
 
     if final_score >= 80:
-
         confidence = "High"
-
     elif final_score >= 55:
-
         confidence = "Medium"
-
     else:
-
         confidence = "Low"
+
+    # Penalty for too little evidence (e.g. only a name match)
+    if total_weight < 0.5:
+        if confidence == "High":
+            confidence = "Medium"
+        elif confidence == "Medium":
+            confidence = "Low"
 
 
     # --------------------------------------------------------

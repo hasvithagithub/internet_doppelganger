@@ -251,12 +251,13 @@ def extract_name_mentions(text, target_name):
 
     for word in name_words:
 
-        if len(word) < 3:
-            continue
-
         pattern = r"\b" + re.escape(word) + r"\b"
 
-        if re.search(pattern, text_lower):
+        # Also allow matching just the initial if the word is > 1 char
+        initial = word[0]
+        initial_pattern = r"\b" + re.escape(initial) + r"\b"
+
+        if re.search(pattern, text_lower) or (len(word) > 1 and re.search(initial_pattern, text_lower)):
 
             if word not in matches:
                 matches.append(word)
@@ -286,7 +287,6 @@ def calculate_name_match_score(
             r"[a-zA-Z0-9]+",
             target_name
         )
-        if len(word) >= 3
     )
 
     if not target_words:

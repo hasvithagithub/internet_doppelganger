@@ -7,6 +7,7 @@ SUPPORTED_PLATFORMS = {
     "kaggle.com": "Kaggle",
     "medium.com": "Medium",
     "dev.to": "Dev.to",
+    "pinterest.com": "Pinterest",
 }
 
 

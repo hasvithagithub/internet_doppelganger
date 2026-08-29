@@ -1,3 +1,7 @@
+# ============================================================
+# QUERY GENERATOR
+# ============================================================
+
 PLATFORMS = {
     "GitHub": "github.com",
     "LinkedIn": "linkedin.com",
@@ -8,9 +12,13 @@ PLATFORMS = {
 }
 
 
+# ============================================================
+# USERNAME VARIANTS
+# ============================================================
+
 def generate_username_variants(identity):
     """
-    Generate a small number of likely username variants.
+    Generate likely username variations from a person's name.
     """
 
     words = identity.lower().split()
@@ -20,72 +28,157 @@ def generate_username_variants(identity):
 
     variants = []
 
-    # All words together
-    variants.append("".join(words))
+    # Remove spaces
+    variants.append(
+        "".join(words)
+    )
 
-    # First + last name
-    if len(words) >= 2:
-        variants.append(words[0] + words[-1])
+    # Add separated variants
+    variants.append(
+        ".".join(words)
+    )
+    variants.append(
+        "_".join(words)
+    )
 
-    # Last + first name
+    # First + last
     if len(words) >= 2:
-        variants.append(words[-1] + words[0])
 
-    # First initial + last name
+        variants.append(
+            words[0] + words[-1]
+        )
+        variants.append(
+            words[0] + "." + words[-1]
+        )
+        variants.append(
+            words[0] + "_" + words[-1]
+        )
+
+    # Last + first
     if len(words) >= 2:
-        variants.append(words[0][0] + words[-1])
+
+        variants.append(
+            words[-1] + words[0]
+        )
+        variants.append(
+            words[-1] + "." + words[0]
+        )
+        variants.append(
+            words[-1] + "_" + words[0]
+        )
+
+    # First initial + last
+    if len(words) >= 2:
+
+        variants.append(
+            words[0][0] + words[-1]
+        )
+        variants.append(
+            words[0][0] + "." + words[-1]
+        )
+        variants.append(
+            words[0][0] + "_" + words[-1]
+        )
+
+    # First + middle + last initials
+    if len(words) >= 3:
+
+        variants.append(
+            words[0][0]
+            + words[1][0]
+            + words[-1]
+        )
+
+    # First initial + middle + last
+    if len(words) >= 3:
+
+        variants.append(
+            words[0][0]
+            + words[1]
+            + words[-1]
+        )
 
     # Remove duplicates
-    return list(dict.fromkeys(variants))
+    return list(
+        dict.fromkeys(variants)
+    )
 
 
-def generate_queries(name, username=None, university=None):
+# ============================================================
+# GENERATE QUERIES
+# ============================================================
+
+def generate_queries(
+    name,
+    username=None,
+    university=None
+):
     """
-    Generate a small set of high-value search queries.
+    Generate targeted web-search queries for
+    discovering potential online profiles.
     """
 
     queries = []
 
-    # ------------------------------------------------
+    # --------------------------------------------------------
     # 1. Exact full name
-    # ------------------------------------------------
+    # --------------------------------------------------------
 
-    queries.append(f'"{name}"')
+    queries.append(
+        f'"{name}"'
+    )
 
-    # ------------------------------------------------
-    # 2. Platform-specific exact name searches
-    # ------------------------------------------------
+    # --------------------------------------------------------
+    # 2. Platform-specific name searches
+    # --------------------------------------------------------
 
     for domain in PLATFORMS.values():
 
+        # Exact phrase
         queries.append(
             f'"{name}" site:{domain}'
         )
 
-    # ------------------------------------------------
-    # 3. Username search
-    # ------------------------------------------------
+        # Broad search (handles different name ordering)
+        queries.append(
+            f'{name} site:{domain}'
+        )
+
+    # --------------------------------------------------------
+    # 3. Username searches
+    # --------------------------------------------------------
 
     if username:
 
+        # Exact supplied username
         queries.append(
             f'"{username}"'
         )
 
-    else:
-
-        # Only use the strongest username variant
-        variants = generate_username_variants(name)
-
-        if variants:
+        # Search username on each platform
+        for domain in PLATFORMS.values():
 
             queries.append(
-                f'"{variants[0]}"'
+                f'"{username}" site:{domain}'
             )
 
-    # ------------------------------------------------
-    # 4. University search
-    # ------------------------------------------------
+    else:
+
+        # Generate username variants
+        variants = generate_username_variants(
+            name
+        )
+
+        # Search each variant
+        for variant in variants:
+
+            queries.append(
+                f'"{variant}"'
+            )
+
+    # --------------------------------------------------------
+    # 4. Name + university
+    # --------------------------------------------------------
 
     if university:
 
@@ -93,8 +186,38 @@ def generate_queries(name, username=None, university=None):
             f'"{name}" "{university}"'
         )
 
-    # ------------------------------------------------
-    # Remove duplicates
-    # ------------------------------------------------
+        # Search university + platform
+        for domain in PLATFORMS.values():
 
-    return list(dict.fromkeys(queries))
+            queries.append(
+                f'"{name}" "{university}" site:{domain}'
+            )
+            queries.append(
+                f'{name} "{university}" site:{domain}'
+            )
+
+    # --------------------------------------------------------
+    # 5. Developer-oriented searches
+    # --------------------------------------------------------
+
+    queries.append(
+        f'"{name}" developer'
+    )
+
+    queries.append(
+        f'"{name}" engineer'
+    )
+
+    queries.append(
+        f'"{name}" student'
+    )
+
+    # --------------------------------------------------------
+    # Remove duplicates
+    # --------------------------------------------------------
+
+    queries = list(
+        dict.fromkeys(queries)
+    )
+
+    return queries
