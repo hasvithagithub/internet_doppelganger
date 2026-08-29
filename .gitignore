@@ -1,5 +1,27 @@
 .env
+.env.*
+!.env.example
+!.env.sample
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# Python cache / tooling
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Keep data directory placeholder
 data/*
 !data/.gitkeep
